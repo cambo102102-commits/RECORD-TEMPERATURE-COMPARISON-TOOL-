@@ -1,1 +1,611 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Temperature Data Comparison</title>
+
+<style>
+  :root {
+    --bg: #050505;
+    --panel: #08080c;
+    --yellow: #ffd400;
+    --white: #f5f5f5;
+    --pink: #d648e8;
+    --red: #e50012;
+    --orange: #e44220;
+    --purple: #9727df;
+    --blue: #1595f2;
+    --deepblue: #1d10f0;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: black;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .tool {
+    width: 100%;
+    min-height: 100vh;
+    background: var(--bg);
+    padding: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .frame {
+    position: relative;
+    width: min(1250px, 100%);
+    min-height: 720px;
+    border: 2px solid #111;
+    background: var(--panel);
+    padding: 24px 46px 36px;
+  }
+
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    width: 165px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .avg-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--yellow);
+    font-size: 15px;
+    text-transform: uppercase;
+  }
+
+  .avg-value {
+    border: 3px solid var(--yellow);
+    padding: 12px 22px;
+    min-width: 135px;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .search {
+    display: flex;
+    border: 4px solid var(--yellow);
+    height: 54px;
+    min-width: 320px;
+    max-width: 430px;
+    flex: 1;
+  }
+
+  .search input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--yellow);
+    font-weight: bold;
+    text-align: center;
+    outline: none;
+    font-size: 15px;
+  }
+
+  .search button {
+    width: 58px;
+    border: none;
+    background: transparent;
+    color: var(--yellow);
+    font-size: 32px;
+    cursor: pointer;
+  }
+
+  h1 {
+    color: transparent;
+    -webkit-text-stroke: 2px var(--yellow);
+    text-align: center;
+    letter-spacing: 12px;
+    font-size: clamp(26px, 4vw, 46px);
+    margin: 32px 0 10px;
+    font-weight: 900;
+  }
+
+  .date {
+    text-align: center;
+    font-family: Georgia, serif;
+    font-size: clamp(22px, 3vw, 34px);
+    letter-spacing: 8px;
+    margin-bottom: 30px;
+  }
+
+  .content {
+    display: grid;
+    grid-template-columns: 70px 1fr 1fr 70px;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .arrow-box {
+    border: 3px solid var(--yellow);
+    height: 310px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  .arrow {
+    width: 70px;
+    height: 70px;
+    border-top: 4px solid var(--yellow);
+    border-right: 4px solid var(--yellow);
+  }
+
+  .left .arrow {
+    transform: rotate(-135deg);
+  }
+
+  .right .arrow {
+    transform: rotate(45deg);
+  }
+
+  .section {
+    text-align: center;
+  }
+
+  .bars {
+    height: 350px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .bar-wrap {
+    width: 90px;
+    text-align: center;
+  }
+
+  .bar-value {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+
+  .bar {
+    width: 90px;
+    min-height: 30px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+    font-size: 10px;
+    font-weight: 900;
+    color: #070707;
+    text-shadow: 0 0 2px white;
+  }
+
+  .forecast-high { background: var(--pink); }
+  .record-max-high { background: #cc080d; }
+  .record-low-high { background: var(--orange); }
+
+  .forecast-low { background: var(--purple); }
+  .record-max-low { background: var(--blue); }
+  .record-min-low { background: var(--deepblue); }
+
+  .section-title {
+    color: var(--yellow);
+    font-size: 44px;
+    font-weight: 900;
+    margin-top: 16px;
+    text-shadow: 3px 3px 0 #222;
+  }
+
+  .details {
+    font-size: 18px;
+    line-height: 1.45;
+    font-weight: bold;
+  }
+
+  .pink { color: var(--pink); }
+  .red { color: var(--red); }
+  .orange { color: var(--orange); }
+  .purple { color: #df42ff; }
+  .blue { color: var(--blue); }
+  .deepblue { color: #1e35ff; }
+
+  .status {
+    text-align: center;
+    margin-top: 14px;
+    font-size: 13px;
+    color: #aaa;
+  }
+
+  @media (max-width: 900px) {
+    .frame {
+      padding: 18px;
+    }
+
+    .content {
+      grid-template-columns: 48px 1fr 48px;
+      grid-template-areas:
+        "left high right"
+        ". low .";
+    }
+
+    .left { grid-area: left; }
+    .right { grid-area: right; }
+    .high-section { grid-area: high; }
+    .low-section { grid-area: low; }
+
+    .arrow-box {
+      height: 220px;
+    }
+
+    .logo {
+      width: 120px;
+    }
+
+    .search {
+      min-width: 100%;
+    }
+
+    h1 {
+      letter-spacing: 5px;
+      -webkit-text-stroke: 1.4px var(--yellow);
+    }
+
+    .bars {
+      height: 280px;
+    }
+
+    .bar-wrap,
+    .bar {
+      width: 70px;
+    }
+  }
+</style>
+</head>
+
+<body>
+<div class="tool">
+  <div class="frame">
+
+    <div class="top">
+      <img src="logo.png" class="logo" id="logo" alt="Logo" />
+
+      <div class="avg-box">
+        <span>Average</span>
+        <div class="avg-value" id="avgHigh">HIGH: --°F</div>
+        <div class="avg-value" id="avgLow">LOW: --°F</div>
+      </div>
+
+      <form class="search" id="searchForm">
+        <input id="searchInput" placeholder="SEARCH LOCATION HERE" />
+        <button type="submit">🔍</button>
+      </form>
+    </div>
+
+    <h1>TEMPERATURE DATA COMPARISON</h1>
+    <div class="date" id="dateLabel">LOADING...</div>
+
+    <div class="content">
+      <div class="arrow-box left" id="prevDay">
+        <div class="arrow"></div>
+      </div>
+
+      <div class="section high-section">
+        <div class="bars">
+          <div class="bar-wrap">
+            <div class="bar-value pink" id="forecastHighValue">--°</div>
+            <div class="bar forecast-high" id="forecastHighBar">FORECASTED<br>HIGH</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-value red" id="recordHighValue">--°</div>
+            <div class="bar record-max-high" id="recordHighBar">RECORD<br>MAX HIGH</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-value orange" id="recordLowHighValue">--°</div>
+            <div class="bar record-low-high" id="recordLowHighBar">RECORD<br>LOW HIGH</div>
+          </div>
+        </div>
+
+        <div class="section-title">HIGH</div>
+        <div class="details">
+          <div class="pink" id="forecastHighText">FORECASTED HIGH: --°F</div>
+          <div class="red" id="recordHighText">RECORD HIGHEST HIGH: --°F</div>
+          <div class="orange" id="recordLowHighText">RECORD LOWEST HIGH: --°F</div>
+        </div>
+      </div>
+
+      <div class="section low-section">
+        <div class="bars">
+          <div class="bar-wrap">
+            <div class="bar-value purple" id="forecastLowValue">--°</div>
+            <div class="bar forecast-low" id="forecastLowBar">FORECASTED<br>LOW</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-value blue" id="recordHighLowValue">--°</div>
+            <div class="bar record-max-low" id="recordHighLowBar">RECORD<br>MAX LOW</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-value deepblue" id="recordLowValue">--°</div>
+            <div class="bar record-min-low" id="recordLowBar">RECORD<br>MIN LOW</div>
+          </div>
+        </div>
+
+        <div class="section-title">LOW</div>
+        <div class="details">
+          <div class="purple" id="forecastLowText">FORECASTED LOW: --°F</div>
+          <div class="blue" id="recordHighLowText">RECORD HIGHEST LOW: --°F</div>
+          <div class="deepblue" id="recordLowText">RECORD LOWEST LOW: --°F</div>
+        </div>
+      </div>
+
+      <div class="arrow-box right" id="nextDay">
+        <div class="arrow"></div>
+      </div>
+    </div>
+
+    <div class="status" id="status">Use location or search a city, ZIP, town, or K airport code.</div>
+  </div>
+</div>
+
+<script>
+/*
+  IMPORTANT:
+  NWS forecast data works without a key.
+  Official historical records/normals usually require NOAA/NCEI or NOWData access.
+  Because NOAA CDO requires a token, add your token below for live normals/records.
+
+  Get token:
+  https://www.ncdc.noaa.gov/cdo-web/token
+*/
+
+const NOAA_TOKEN = ""; // Optional, needed for official normals/records.
+let currentLocation = null;
+let currentDayIndex = 0;
+let forecastDays = [];
+let logoClicks = 0;
+
+const $ = id => document.getElementById(id);
+
+const sampleRecords = {
+  recordHigh: { temp: 101, year: 1952 },
+  recordLowHigh: { temp: 73, year: 1962 },
+  recordHighLow: { temp: 77, year: 2009 },
+  recordLow: { temp: 54, year: 1974 },
+  avgHigh: 89,
+  avgLow: 71
+};
+
+function formatDate(date) {
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  }).toUpperCase().replace(",", "  -");
+}
+
+function setStatus(text) {
+  $("status").textContent = text;
+}
+
+function setBar(id, temp) {
+  const bar = $(id);
+  const height = Math.max(70, Math.min(330, temp * 2.7));
+  bar.style.height = height + "px";
+}
+
+function updateDisplay() {
+  const day = forecastDays[currentDayIndex];
+  if (!day) return;
+
+  const records = day.records || sampleRecords;
+
+  $("dateLabel").textContent = formatDate(day.date);
+
+  $("avgHigh").textContent = `HIGH: ${records.avgHigh}°F`;
+  $("avgLow").textContent = `LOW: ${records.avgLow}°F`;
+
+  $("forecastHighValue").textContent = `${day.high}°`;
+  $("forecastLowValue").textContent = `${day.low}°`;
+
+  $("recordHighValue").textContent = `${records.recordHigh.temp}°`;
+  $("recordLowHighValue").textContent = `${records.recordLowHigh.temp}°`;
+  $("recordHighLowValue").textContent = `${records.recordHighLow.temp}°`;
+  $("recordLowValue").textContent = `${records.recordLow.temp}°`;
+
+  $("forecastHighText").textContent = `FORECASTED HIGH: ${day.high}°F`;
+  $("forecastLowText").textContent = `FORECASTED LOW: ${day.low}°F`;
+
+  $("recordHighText").textContent =
+    `RECORD HIGHEST HIGH: ${records.recordHigh.temp}°F in ${records.recordHigh.year}`;
+
+  $("recordLowHighText").textContent =
+    `RECORD LOWEST HIGH: ${records.recordLowHigh.temp}°F in ${records.recordLowHigh.year}`;
+
+  $("recordHighLowText").textContent =
+    `RECORD HIGHEST LOW: ${records.recordHighLow.temp}°F in ${records.recordHighLow.year}`;
+
+  $("recordLowText").textContent =
+    `RECORD LOWEST LOW: ${records.recordLow.temp}°F in ${records.recordLow.year}`;
+
+  setBar("forecastHighBar", day.high);
+  setBar("recordHighBar", records.recordHigh.temp);
+  setBar("recordLowHighBar", records.recordLowHigh.temp);
+  setBar("forecastLowBar", day.low);
+  setBar("recordHighLowBar", records.recordHighLow.temp);
+  setBar("recordLowBar", records.recordLow.temp);
+}
+
+async function geocodeLocation(query) {
+  query = query.trim();
+
+  if (/^K[A-Z0-9]{3}$/i.test(query)) {
+    const res = await fetch(`https://aviationweather.gov/api/data/stationinfo?ids=${query.toUpperCase()}&format=json`);
+    const data = await res.json();
+    if (!data.length) throw new Error("Airport code not found.");
+    return {
+      lat: Number(data[0].lat),
+      lon: Number(data[0].lon),
+      name: data[0].site || query.toUpperCase()
+    };
+  }
+
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (!data.length) throw new Error("Location not found.");
+
+  return {
+    lat: Number(data[0].lat),
+    lon: Number(data[0].lon),
+    name: data[0].display_name
+  };
+}
+
+async function useDeviceLocation() {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+        name: "Device Location"
+      }),
+      reject,
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  });
+}
+
+async function getNWSForecast(lat, lon) {
+  const pointRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+  const pointData = await pointRes.json();
+
+  const forecastUrl = pointData.properties.forecast;
+  const forecastRes = await fetch(forecastUrl);
+  const forecastData = await forecastRes.json();
+
+  const periods = forecastData.properties.periods;
+  const days = [];
+
+  for (let i = 0; i < periods.length; i += 2) {
+    const p1 = periods[i];
+    const p2 = periods[i + 1];
+
+    if (!p1 || !p2) continue;
+
+    const temps = [p1.temperature, p2.temperature];
+    const date = new Date(p1.startTime);
+
+    days.push({
+      date,
+      high: Math.max(...temps),
+      low: Math.min(...temps),
+      records: sampleRecords
+    });
+  }
+
+  return days.slice(0, 7);
+}
+
+/*
+  Placeholder for official NOAA records/normals.
+
+  NOWData and many almanac pages are not simple browser APIs and may be blocked by CORS.
+  For a live production website, the best setup is:
+  Browser -> your backend/API -> NOAA/NOWData/NCEI -> browser.
+
+  This function can be connected later once your NOAA token/backend is ready.
+*/
+async function getOfficialRecordsAndNormals(location, date) {
+  return sampleRecords;
+}
+
+async function loadLocation(location) {
+  try {
+    currentLocation = location;
+    currentDayIndex = 0;
+    setStatus(`Loading forecast for ${location.name}...`);
+
+    forecastDays = await getNWSForecast(location.lat, location.lon);
+
+    for (const day of forecastDays) {
+      day.records = await getOfficialRecordsAndNormals(location, day.date);
+    }
+
+    updateDisplay();
+    setStatus(`Showing data for ${location.name}`);
+  } catch (err) {
+    console.error(err);
+    setStatus("Could not load data. Try another city, ZIP, town, or K airport code.");
+  }
+}
+
+$("searchForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const query = $("searchInput").value;
+  if (!query.trim()) return;
+
+  try {
+    setStatus("Searching location...");
+    const loc = await geocodeLocation(query);
+    await loadLocation(loc);
+  } catch (err) {
+    console.error(err);
+    setStatus("Location not found.");
+  }
+});
+
+$("nextDay").addEventListener("click", () => {
+  if (currentDayIndex < forecastDays.length - 1) {
+    currentDayIndex++;
+    updateDisplay();
+  }
+});
+
+$("prevDay").addEventListener("click", () => {
+  if (currentDayIndex > 0) {
+    currentDayIndex--;
+    updateDisplay();
+  }
+});
+
+$("logo").addEventListener("click", async () => {
+  logoClicks++;
+
+  if (logoClicks === 1 && currentLocation) {
+    setStatus("Refreshing shown day...");
+    await loadLocation(currentLocation);
+  }
+
+  if (logoClicks >= 2) {
+    currentDayIndex = 0;
+    logoClicks = 0;
+    updateDisplay();
+    setStatus("Returned to current day.");
+  }
+});
+
+(async function init() {
+  try {
+    const loc = await useDeviceLocation();
+    await loadLocation(loc);
+  } catch {
+    setStatus("Device location blocked. Search a city, ZIP, town, or K airport code.");
+  }
+})();
+</script>
+</body>
+</html>
